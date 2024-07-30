@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-
-from flask import Flask, make_response
+from flask import Flask, jsonify
 from flask_migrate import Migrate
-
 from models import db, Zookeeper, Enclosure, Animal
 
 app = Flask(__name__)
@@ -19,16 +16,34 @@ def home():
 
 @app.route('/animal/<int:id>')
 def animal_by_id(id):
-    return ''
+    animal = Animal.query.get_or_404(id)
+    return jsonify(
+        id=animal.id,
+        name=animal.name,
+        species=animal.species,
+        zookeeper=animal.zookeeper.name if animal.zookeeper else None,
+        enclosure=animal.enclosure.environment if animal.enclosure else None
+    )
 
 @app.route('/zookeeper/<int:id>')
 def zookeeper_by_id(id):
-    return ''
+    zookeeper = Zookeeper.query.get_or_404(id)
+    return jsonify(
+        id=zookeeper.id,
+        name=zookeeper.name,
+        birthday=zookeeper.birthday,
+        animals=[animal.name for animal in zookeeper.animals]
+    )
 
 @app.route('/enclosure/<int:id>')
 def enclosure_by_id(id):
-    return ''
-
+    enclosure = Enclosure.query.get_or_404(id)
+    return jsonify(
+        id=enclosure.id,
+        environment=enclosure.environment,
+        open_to_visitors=enclosure.open_to_visitors,
+        animals=[animal.name for animal in enclosure.animals]
+    )
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
